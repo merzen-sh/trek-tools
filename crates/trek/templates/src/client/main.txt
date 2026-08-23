@@ -1,0 +1,23 @@
+-- Client Side Script: {{ resource_name }}
+
+CreateThread(function()
+    print("^2[{{ resource_name }}]^7 Client script loaded successfully.")
+end)
+
+RegisterNetEvent('{{ resource_name }}:client:notify')
+AddEventHandler('{{ resource_name }}:client:notify', function(msg, notifyType)
+    notifyType = notifyType or 'primary'
+    if Utils.FrameworkName == 'qbcore' and Utils.Framework then
+        Utils.Framework.Functions.Notify(msg, notifyType)
+    elseif Utils.FrameworkName == 'esx' and Utils.Framework then
+        Utils.Framework.ShowNotification(msg)
+    elseif Utils.FrameworkName == 'qbox' then
+        exports.qbx_core:Notify(msg, notifyType)
+    else
+        BeginTextCommandThefeedPost("STRING")
+        AddTextComponentSubstringPlayerName(msg)
+        EndTextCommandThefeedPostTicker(false, true)
+    end
+end)
+
+

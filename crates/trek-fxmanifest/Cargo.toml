@@ -1,0 +1,6 @@
+[package]
+name = "trek-fxmanifest"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]

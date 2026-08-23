@@ -1,0 +1,21 @@
+-- Server Config: {{ resource_name }}
+ServerConfig = {}
+
+{% if is_esx %}
+ServerConfig.Framework = 'esx'
+ServerConfig.EnableCallbacks = true
+ServerConfig.MaxPlayers = 128
+{% else if is_qbcore %}
+ServerConfig.Framework = 'qbcore'
+ServerConfig.EnableCallbacks = true
+ServerConfig.MaxPlayers = 128
+ServerConfig.UseKvp = true
+{% else if is_qbox %}
+ServerConfig.Framework = 'qbox'
+ServerConfig.EnableCallbacks = true
+ServerConfig.MaxPlayers = 128
+ServerConfig.UseKvp = true
+{% else %}
+ServerConfig.Framework = 'none'
+ServerConfig.EnableCallbacks = false
+{% endif %}

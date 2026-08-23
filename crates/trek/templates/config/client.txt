@@ -1,0 +1,22 @@
+-- Client Config: {{ resource_name }}
+ClientConfig = {}
+
+{% if is_esx %}
+ClientConfig.Locale = Config.Locale or 'en'
+ClientConfig.UseMarkers = true
+ClientConfig.MarkerType = 1
+ClientConfig.MarkerColor = { r = 0, g = 128, b = 255, a = 100 }
+{% else if is_qbcore %}
+ClientConfig.UseTarget = true
+ClientConfig.UseMarkers = true
+ClientConfig.MarkerType = 25
+ClientConfig.MarkerColor = { r = 0, g = 128, b = 255, a = 100 }
+{% else if is_qbox %}
+ClientConfig.UseTarget = true
+ClientConfig.UseMarkers = true
+ClientConfig.MarkerType = 25
+ClientConfig.MarkerColor = { r = 0, g = 128, b = 255, a = 100 }
+{% else %}
+ClientConfig.UseMarkers = true
+ClientConfig.MarkerType = 1
+{% endif %}

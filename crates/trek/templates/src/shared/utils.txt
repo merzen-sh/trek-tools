@@ -1,0 +1,63 @@
+-- Shared Utilities: {{ resource_name }}
+-- Common helper functions used by both client and server
+
+Utils = {}
+Utils.Framework = nil
+Utils.FrameworkName = nil
+
+Citizen.CreateThread(function()
+{%- if is_qbcore %}
+    -- Detect QBCore
+    if GetResourceState('qb-core') == 'started' then
+        Utils.Framework = exports['qb-core']:GetCoreObject()
+        Utils.FrameworkName = 'qbcore'
+{%- if is_esx %}
+    -- Detect ESX
+    elseif GetResourceState('es_extended') == 'started' then
+        Utils.Framework = exports['es_extended']:getSharedObject()
+        Utils.FrameworkName = 'esx'
+{%- endif %}
+{%- if is_qbox %}
+    -- Detect QBox
+    elseif GetResourceState('qbx_core') == 'started' or GetResourceState('qbox') == 'started' then
+        Utils.Framework = exports['qbx_core']:GetCoreObject()
+        Utils.FrameworkName = 'qbox'
+{%- endif %}
+    end
+{%- else if is_esx %}
+    -- Detect ESX
+    if GetResourceState('es_extended') == 'started' then
+        Utils.Framework = exports['es_extended']:getSharedObject()
+        Utils.FrameworkName = 'esx'
+{%- if is_qbox %}
+    -- Detect QBox
+    elseif GetResourceState('qbx_core') == 'started' or GetResourceState('qbox') == 'started' then
+        Utils.Framework = exports['qbx_core']:GetCoreObject()
+        Utils.FrameworkName = 'qbox'
+{%- endif %}
+    end
+{%- else if is_qbox %}
+    -- Detect QBox
+    if GetResourceState('qbx_core') == 'started' or GetResourceState('qbox') == 'started' then
+        Utils.Framework = exports['qbx_core']:GetCoreObject()
+        Utils.FrameworkName = 'qbox'
+    end
+{%- endif %}
+{%- if is_esx || is_qbcore || is_qbox %}
+    if Utils.FrameworkName then
+        Utils.Print(string.format("Framework detected: ^2%s^7", Utils.FrameworkName))
+    else
+        Utils.Print("^3No supported framework detected, running in standalone mode.^7")
+    end
+{%- else %}
+    Utils.Print("^2Running in standalone mode.^7")
+{%- endif %}
+end)
+
+function Utils.Print(str)
+    print("^3[{{ resource_name }}]^7 " .. str)
+end
+
+function Utils.GetFramework()
+    return Utils.FrameworkName or 'standalone'
+end

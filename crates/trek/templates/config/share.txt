@@ -1,0 +1,18 @@
+-- Shared Config: {{ resource_name }}
+Config = {}
+
+{% if is_esx %}
+Config.Framework = 'esx'
+Config.Locale = 'en'
+Config.DefaultSpawn = { x = -269.4, y = -955.3, z = 31.2, heading = 207.0 }
+{% else if is_qbcore %}
+Config.Framework = 'qbcore'
+Config.MoneyTypes = { 'cash', 'bank', 'crypto' }
+Config.MoneyDefaults = { cash = 0, bank = 0, crypto = 0 }
+{% else if is_qbox %}
+Config.Framework = 'qbox'
+Config.MoneyTypes = { 'cash', 'bank', 'crypto' }
+Config.MoneyDefaults = { cash = 0, bank = 0, crypto = 0 }
+{% else %}
+Config.Framework = 'none'
+{% endif %}
