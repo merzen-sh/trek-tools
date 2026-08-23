@@ -126,14 +126,9 @@ impl<'a> Lexer<'a> {
                 Some(c) if c == ' ' || c == '\t' || c == '\r' => {
                     self.cursor.bump();
                 }
-                Some(c @ ('-' | '#')) => {
+                Some('-') => {
                     self.cursor.bump();
-                    let is_comment = if self.cursor.peek() == Some('-') {
-                        true // '--' line comment
-                    } else {
-                        c == '#' // '#' header comment (emitted by trek templates)
-                    };
-                    if is_comment {
+                    if self.cursor.peek() == Some('-') {
                         while let Some(c) = self.cursor.peek() {
                             if c == '\n' {
                                 break;
@@ -142,7 +137,7 @@ impl<'a> Lexer<'a> {
                         }
                     } else {
                         return Err(LexError {
-                            message: format!("unexpected character '{c}'"),
+                            message: "unexpected character '-'".into(),
                             line,
                             col,
                         });
