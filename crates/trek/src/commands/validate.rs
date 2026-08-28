@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use anyhow::{Result, bail};
-use dialoguer::console::style;
+use console::style;
 use trek_fxmanifest::{Diagnostic, Key, Severity, parse};
 
 fn severity_symbol(s: Severity) -> String {

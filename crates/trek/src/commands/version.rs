@@ -2,7 +2,7 @@ use std::fs;
 use std::path::Path;
 
 use anyhow::{Result, bail};
-use dialoguer::console::style;
+use console::style;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BumpType {
@@ -134,7 +134,7 @@ pub fn run(manifest_path: &Path, bump_type: Option<BumpType>, ci: bool) -> Resul
                 println!(
                     "{} Current version: {}",
                     style("•").cyan().bold(),
-                    style(version).green().bold()
+                    style(&version).green().bold()
                 );
             }
         }

@@ -44,7 +44,6 @@ fn test_cli_generate_and_pack_workflow() {
             "-f",
             "ESX",
             "QBCore",
-            "--no-ui",
         ])
         .output()
         .expect("Failed to run trek generate");
@@ -89,7 +88,7 @@ fn test_cli_pack_dry_run_and_report() {
     // 1. Generate scaffold
     let gen_output = Command::new(env!("CARGO_BIN_EXE_trek"))
         .current_dir(temp_path)
-        .args(["generate", "-n", "dry_res", "--no-ui", "-f", "None"])
+        .args(["generate", "-n", "dry_res", "-f", "None"])
         .output()
         .expect("Failed to run trek generate");
 
@@ -216,7 +215,7 @@ fn test_cli_validate_generated_resource_passes() {
 
     let gen_output = Command::new(env!("CARGO_BIN_EXE_trek"))
         .current_dir(temp_dir.path())
-        .args(["generate", "-n", "valid_res", "--no-ui", "-f", "None"])
+        .args(["generate", "-n", "valid_res", "-f", "None"])
         .output()
         .expect("Failed to run trek generate");
     assert!(gen_output.status.success());
@@ -282,7 +281,7 @@ fn test_cli_release_pipeline() {
 
     let gen_output = Command::new(env!("CARGO_BIN_EXE_trek"))
         .current_dir(temp_dir.path())
-        .args(["generate", "-n", "rel_res", "--no-ui", "-f", "None"])
+        .args(["generate", "-n", "rel_res", "-f", "None"])
         .output()
         .expect("Failed to run trek generate");
     assert!(gen_output.status.success());
@@ -319,7 +318,7 @@ fn test_cli_release_pipeline() {
     assert!(zip_path.exists());
 
     let manifest = fs::read_to_string(res_path.join("fxmanifest.lua")).unwrap();
-    assert!(manifest.contains("version '0.0.1'"));
+    assert!(manifest.contains("version(\"0.0.1\")"));
 }
 
 #[test]

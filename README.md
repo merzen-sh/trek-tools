@@ -7,7 +7,6 @@ A lightweight, high-performance CLI utility for scaffolding and packaging FiveM 
 ## Features
 
 - **Interactive & Non-interactive Scaffolding**: Generate standard FiveM resource structures with multi-framework boilerplate (ESX, QBCore, Qbox) in seconds.
-- **Optional Web UI Boilerplate**: Automated setup for modern NUI web interfaces using Vite + Preact (powered by Bun).
 - **Pattern-based Resource Packaging**: Package resources into production-ready `.zip` release archives using `.pack` allowlist patterns.
 - **Ultra-lean Binary**: Optimized Rust build compiled for minimal binary footprint.
 
@@ -17,7 +16,6 @@ A lightweight, high-performance CLI utility for scaffolding and packaging FiveM 
 
 ### Prerequisites
 - [Rust toolchain](https://rustup.rs/) (edition 2024 / stable)
-- [Bun](https://bun.sh/) *(optional, required only if generating web UI boilerplate)*
 
 ### Build from Source
 
@@ -42,7 +40,7 @@ trek [COMMAND]
 
 ### 1. `generate`
 
-Scaffolds a new FiveM resource directory with configuration files, client/server scripts, shared utilities, and an optional Preact NUI web interface.
+Scaffolds a new FiveM resource directory with configuration files, client/server scripts, and shared utilities.
 
 ```bash
 trek generate [OPTIONS]
@@ -55,8 +53,6 @@ trek generate [OPTIONS]
 | `--name <NAME>` | `-n` | `String` | Resource name. If omitted, triggers interactive prompt. |
 | `--description <DESC>` | `-d` | `String` | Resource description in `fxmanifest.lua`. If omitted, defaults to `"A FiveM resource for <NAME>"`. |
 | `--frameworks <LIST>...` | `-f` | `List` | Framework integrations to include (`ESX`, `QBCore`, `Qbox`, `None`). Multiple values supported. |
-| `--no-ui` | | `bool` | Skip Web UI boilerplate installation. |
-| `--install` | `-i` | `bool` | Run `bun install` in the generated `ui/` directory after scaffolding (requires UI). |
 | `--help` | `-h` | | Print help information. |
 
 #### Examples
@@ -65,15 +61,15 @@ trek generate [OPTIONS]
 ```bash
 trek generate
 ```
-*Prompts interactively for resource name, description, framework selections, and whether to include the web UI.*
+*Prompts interactively for resource name, description, and framework selections.*
 
 **Non-Interactive / CLI Flags:**
 ```bash
 # Generate a resource with ESX and QBCore support
 trek generate -n my-resource -d "Custom vehicle shop" -f ESX QBCore
 
-# Generate a standalone resource without web UI
-trek generate -n simple-teleport --no-ui -f None
+# Generate a standalone resource
+trek generate -n simple-teleport -f None
 ```
 
 #### Generated Directory Layout
@@ -93,7 +89,6 @@ my-resource/
 │   │   └── server.lua   # Server-side logic
 │   └── shared/
 │       └── utils.lua    # Shared utility functions
-└── ui/                  # (Optional) Vite + Preact frontend
 ```
 
 ---
@@ -144,7 +139,6 @@ The `.pack` file in the root of your resource specifies which files to include i
 fxmanifest.lua
 config/**/*.lua
 src/**/*.lua
-ui/dist/**
 ```
 
 ---

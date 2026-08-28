@@ -139,6 +139,15 @@ impl Parser {
                     self.next();
                     return Ok(values);
                 }
+                TokenKind::LBrace => {
+                    // Handle `key({ ... })` table-in-call syntax
+                    self.next();
+                    let table_values = self.parse_table_body_values()?;
+                    if let TokenKind::RParen = self.peek().kind {
+                        self.next();
+                    }
+                    return Ok(table_values);
+                }
                 TokenKind::Str(value) | TokenKind::Ident(value) => {
                     self.next();
                     values.push(value);
@@ -173,6 +182,12 @@ impl Parser {
     /// Parses `{ 'a', 'b', ... }` up to and including the closing brace;
     /// newlines and trailing commas are allowed inside the table.
     fn parse_table_body(&mut self, key: Key) -> Result<Statement, ParseError> {
+        let values = self.parse_table_body_values()?;
+        Ok(Statement::Table { key, values })
+    }
+
+    /// Parses the values inside `{ ... }` (braces already consumed).
+    fn parse_table_body_values(&mut self) -> Result<Vec<String>, ParseError> {
         let mut values = Vec::new();
 
         loop {
@@ -180,7 +195,7 @@ impl Parser {
             match self.peek().kind.clone() {
                 TokenKind::RBrace => {
                     self.next();
-                    return Ok(Statement::Table { key, values });
+                    return Ok(values);
                 }
                 TokenKind::Str(value) | TokenKind::Ident(value) => {
                     self.next();
@@ -191,8 +206,7 @@ impl Parser {
                     } else if !matches!(self.peek().kind, TokenKind::RBrace) {
                         return Err(ParseError {
                             message: format!(
-                                "expected ',' or '}}' in table '{}', found {}",
-                                key,
+                                "expected ',' or '}}' in table, found {}",
                                 describe(&self.peek().kind)
                             ),
                             line: self.peek().line,
@@ -202,11 +216,7 @@ impl Parser {
                 }
                 other => {
                     return Err(ParseError {
-                        message: format!(
-                            "expected a string in table '{}', found {}",
-                            key,
-                            describe(&other)
-                        ),
+                        message: format!("expected a string in table, found {}", describe(&other)),
                         line: self.peek().line,
                         col: self.peek().col,
                     });

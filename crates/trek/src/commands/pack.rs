@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 use anyhow::{Result, bail};
-use dialoguer::console::style;
+use console::style;
 use zip::ZipWriter;
 use zip::write::FileOptions;
 

@@ -2,7 +2,7 @@ use std::path::Path;
 use std::time::Instant;
 
 use anyhow::{Result, bail};
-use dialoguer::console::style;
+use console::style;
 
 use crate::commands;
 use crate::commands::version::BumpType;

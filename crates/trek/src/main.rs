@@ -20,25 +20,17 @@ enum Commands {
     #[cfg(feature = "generate")]
     /// Generate a new FiveM resource scaffold
     Generate {
-        /// Resource name (skips interactive prompt)
+        /// Resource name
         #[arg(short, long)]
-        name: Option<String>,
+        name: String,
 
-        /// Resource description (skips interactive prompt)
-        #[arg(short, long)]
-        description: Option<String>,
+        /// Resource description
+        #[arg(short, long, default_value = "A FiveM resource")]
+        description: String,
 
         /// Frameworks to include: ESX, QBCore, Qbox, None
         #[arg(short, long, num_args = 1..)]
         frameworks: Vec<String>,
-
-        /// Skip UI installation (Vite + Preact)
-        #[arg(long)]
-        no_ui: bool,
-
-        /// Install UI dependencies with 'bun install' after scaffolding
-        #[arg(short, long)]
-        install: bool,
     },
     /// Pack a FiveM resource into a zip archive
     Pack {
@@ -123,16 +115,8 @@ fn main() -> Result<()> {
             name,
             description,
             frameworks,
-            no_ui,
-            install,
         } => {
-            commands::generate::run(
-                name.as_deref(),
-                description.as_deref(),
-                frameworks,
-                *no_ui,
-                *install,
-            )?;
+            commands::generate::run(name, description, frameworks)?;
         }
         Commands::Pack {
             out_dir,
