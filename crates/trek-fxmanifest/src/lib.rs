@@ -24,7 +24,7 @@ mod source;
 use std::fmt;
 
 pub use ast::{Game, Key, Manifest, Statement};
-pub use diagnostic::Codeframe;
+pub use diagnostic::{Codeframe, Diagnostic, Severity, Span};
 pub use lexer::{LexError, Lexer, Token, TokenKind};
 pub use parser::{ParseError, Parser};
 pub use source::Source;

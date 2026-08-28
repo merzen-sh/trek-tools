@@ -237,6 +237,7 @@ fn describe(kind: &TokenKind) -> String {
         kind: kind.clone(),
         line: 0,
         col: 0,
+        offset: 0,
     }
     .describe()
 }

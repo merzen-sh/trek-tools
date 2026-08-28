@@ -2,39 +2,12 @@ use std::path::Path;
 
 use anyhow::{Result, bail};
 use dialoguer::console::style;
-use trek_fxmanifest::{Key, parse};
+use trek_fxmanifest::{Diagnostic, Key, Severity, parse};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Severity {
-    Error,
-    Warning,
-}
-
-impl Severity {
-    fn symbol(self) -> String {
-        match self {
-            Severity::Error => style("✗").red().bold().to_string(),
-            Severity::Warning => style("⚠").yellow().bold().to_string(),
-        }
-    }
-}
-
-struct Diagnostic {
-    severity: Severity,
-    message: String,
-}
-
-fn error(message: impl Into<String>) -> Diagnostic {
-    Diagnostic {
-        severity: Severity::Error,
-        message: message.into(),
-    }
-}
-
-fn warning(message: impl Into<String>) -> Diagnostic {
-    Diagnostic {
-        severity: Severity::Warning,
-        message: message.into(),
+fn severity_symbol(s: Severity) -> String {
+    match s {
+        Severity::Error => style("✗").red().bold().to_string(),
+        Severity::Warning => style("⚠").yellow().bold().to_string(),
     }
 }
 
@@ -50,7 +23,7 @@ pub fn run(manifest_path: &Path) -> Result<bool> {
     let base_dir = manifest_path.parent().unwrap_or(Path::new("."));
 
     let start = std::time::Instant::now();
-    let mut diagnostics = Vec::new();
+    let mut diagnostics: Vec<Diagnostic> = Vec::new();
 
     let manifest = match parse(&content) {
         Ok(manifest) => manifest,
@@ -72,26 +45,34 @@ pub fn run(manifest_path: &Path) -> Result<bool> {
         content: &str,
         err: &trek_fxmanifest::Error,
     ) -> Result<()> {
-        let (line, col, message) = match err {
-            trek_fxmanifest::Error::Lex(e) => (e.line, e.col, e.message.clone()),
-            trek_fxmanifest::Error::Parse(e) => (e.line, e.col, e.message.clone()),
+        let (line, col, category, message) = match err {
+            trek_fxmanifest::Error::Lex(e) => (e.line, e.col, "LexError", e.message.clone()),
+            trek_fxmanifest::Error::Parse(e) => (e.line, e.col, "ParseError", e.message.clone()),
         };
 
-        println!(
-            "{} failed to parse '{}'",
-            Severity::Error.symbol(),
-            manifest_path.display()
+        let frame = trek_fxmanifest::Codeframe::new(line, col);
+        let rendered = frame.render_diagnostic(
+            content,
+            Some(manifest_path),
+            Severity::Error,
+            category,
+            &message,
         );
-        println!("{} {}", style("error:").red().bold(), style(message).bold());
 
-        let frame = trek_fxmanifest::Codeframe::new(line, col).render(content, Some(manifest_path));
-        for (idx, frame_line) in frame.lines().enumerate() {
-            if frame_line.contains('^') {
-                println!("{}", style(frame_line).red().bold());
-            } else if idx <= 1 || frame_line.trim_end().ends_with('|') {
-                println!("{}", style(frame_line).dim());
+        for rendered_line in rendered.lines() {
+            if rendered_line.contains('^') || rendered_line.contains('~') {
+                println!("{}", style(rendered_line).red().bold());
+            } else if rendered_line.contains(" --> ") || rendered_line.trim_end().ends_with('|') {
+                println!("{}", style(rendered_line).dim());
+            } else if rendered_line.starts_with('[') {
+                println!(
+                    "{} {}",
+                    severity_symbol(Severity::Error),
+                    rendered_line[rendered_line.find(']').map(|i| i + 1).unwrap_or(0)..]
+                        .trim_start()
+                );
             } else {
-                println!("{frame_line}");
+                println!("{rendered_line}");
             }
         }
 
@@ -115,7 +96,11 @@ pub fn run(manifest_path: &Path) -> Result<bool> {
     let warnings = diagnostics.len() - errors;
 
     for diagnostic in &diagnostics {
-        println!("{} {}", diagnostic.severity.symbol(), diagnostic.message);
+        println!(
+            "{} {}",
+            severity_symbol(diagnostic.severity),
+            diagnostic.message
+        );
     }
 
     println!(
@@ -134,23 +119,27 @@ fn check_declarations(manifest: &trek_fxmanifest::Manifest) -> Vec<Diagnostic> {
     let mut out = Vec::new();
 
     match &manifest.fx_version {
-        None => out.push(error("missing required declaration 'fx_version'")),
-        Some(version) if version != "cerulean" => out.push(warning(format!(
+        None => out.push(Diagnostic::error(
+            "missing required declaration 'fx_version'",
+        )),
+        Some(version) if version != "cerulean" => out.push(Diagnostic::warning(format!(
             "unknown fx_version '{version}' (expected \"cerulean\")"
         ))),
         Some(_) => {}
     }
 
     match &manifest.game {
-        None => out.push(error("missing required declaration 'game'")),
+        None => out.push(Diagnostic::error("missing required declaration 'game'")),
         Some(trek_fxmanifest::Game::Other(name)) => {
-            out.push(warning(format!("unknown game '{name}'")));
+            out.push(Diagnostic::warning(format!("unknown game '{name}'")));
         }
         Some(_) => {}
     }
 
     if manifest.get(&Key::Lua54).map(str::trim) != Some("yes") {
-        out.push(warning("'lua54' is not enabled; FiveM expects lua54 'yes'"));
+        out.push(Diagnostic::warning(
+            "'lua54' is not enabled; FiveM expects lua54 'yes'",
+        ));
     }
 
     out
@@ -172,14 +161,14 @@ fn check_script_files(base_dir: &Path, manifest: &trek_fxmanifest::Manifest) -> 
             }
 
             if !base_dir.join(entry).is_file() {
-                out.push(error(format!(
+                out.push(Diagnostic::error(format!(
                     "'{}' entry '{entry}' does not exist on disk",
                     key.as_str()
                 )));
             }
 
             if seen.contains(&entry) {
-                out.push(error(format!(
+                out.push(Diagnostic::error(format!(
                     "duplicate entry '{entry}' in '{}'",
                     key.as_str()
                 )));
@@ -208,7 +197,7 @@ fn check_duplicates(manifest: &trek_fxmanifest::Manifest) -> Vec<Diagnostic> {
     }
 
     for (name, count) in counts.into_iter().filter(|(_, c)| *c > 1) {
-        out.push(warning(format!(
+        out.push(Diagnostic::warning(format!(
             "declaration '{name}' appears {count} times"
         )));
     }
@@ -248,7 +237,7 @@ fn check_framework_dependencies(manifest: &trek_fxmanifest::Manifest) -> Vec<Dia
                 .any(|dep| dep.trim().eq_ignore_ascii_case(resource))
         })
         .map(|resource| {
-            warning(format!(
+            Diagnostic::warning(format!(
                 "'{resource}' is referenced by scripts but not declared under dependency/dependencies"
             ))
         })

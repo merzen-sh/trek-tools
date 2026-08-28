@@ -339,7 +339,10 @@ fn test_cli_validate_parse_error_shows_codeframe() {
 
     assert!(!output.status.success());
     let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(stdout.contains("failed to parse"), "{stdout}");
+    assert!(
+        stdout.contains("LexError") || stdout.contains("ParseError"),
+        "{stdout}"
+    );
     assert!(stdout.contains("--> "), "{stdout}");
     assert!(stdout.contains(":3:11"), "{stdout}");
     assert!(stdout.contains("^"), "{stdout}");

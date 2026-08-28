@@ -21,11 +21,17 @@ pub struct Token {
     pub kind: TokenKind,
     pub line: usize,
     pub col: usize,
+    pub offset: usize,
 }
 
 impl Token {
-    fn new(kind: TokenKind, line: usize, col: usize) -> Self {
-        Self { kind, line, col }
+    fn new(kind: TokenKind, line: usize, col: usize, offset: usize) -> Self {
+        Self {
+            kind,
+            line,
+            col,
+            offset,
+        }
     }
 
     pub fn describe(&self) -> String {
@@ -49,6 +55,7 @@ pub struct LexError {
     pub message: String,
     pub line: usize,
     pub col: usize,
+    pub offset: usize,
 }
 
 impl fmt::Display for LexError {
@@ -68,7 +75,10 @@ struct Cursor<'a> {
     chars: std::iter::Peekable<Chars<'a>>,
     line: usize,
     col: usize,
+    offset: usize,
 }
+
+const TAB_WIDTH: usize = 4;
 
 impl<'a> Cursor<'a> {
     fn new(input: &'a str) -> Self {
@@ -76,14 +86,18 @@ impl<'a> Cursor<'a> {
             chars: input.chars().peekable(),
             line: 1,
             col: 1,
+            offset: 0,
         }
     }
 
     fn bump(&mut self) -> Option<char> {
         let c = self.chars.next()?;
+        self.offset += c.len_utf8();
         if c == '\n' {
             self.line += 1;
             self.col = 1;
+        } else if c == '\t' {
+            self.col = (self.col / TAB_WIDTH + 1) * TAB_WIDTH + 1;
         } else {
             self.col += 1;
         }
@@ -114,13 +128,13 @@ impl<'a> Lexer<'a> {
         let mut tokens: Vec<Token> = Vec::new();
 
         loop {
-            let (line, col) = (self.cursor.line, self.cursor.col);
+            let (line, col, offset) = (self.cursor.line, self.cursor.col, self.cursor.offset);
             match self.cursor.peek() {
                 None => break,
                 Some('\n') => {
                     self.cursor.bump();
                     if !matches!(tokens.last(), Some(t) if t.kind == TokenKind::Newline) {
-                        tokens.push(Token::new(TokenKind::Newline, line, col));
+                        tokens.push(Token::new(TokenKind::Newline, line, col, offset));
                     }
                 }
                 Some(c) if c == ' ' || c == '\t' || c == '\r' => {
@@ -140,6 +154,7 @@ impl<'a> Lexer<'a> {
                             message: "unexpected character '-'".into(),
                             line,
                             col,
+                            offset,
                         });
                     }
                 }
@@ -153,21 +168,22 @@ impl<'a> Lexer<'a> {
                         '=' => TokenKind::Equals,
                         _ => TokenKind::Comma,
                     };
-                    tokens.push(Token::new(kind, line, col));
+                    tokens.push(Token::new(kind, line, col, offset));
                 }
                 Some(quote @ ('\'' | '"')) => {
                     let s = self.read_string(quote)?;
-                    tokens.push(Token::new(TokenKind::Str(s), line, col));
+                    tokens.push(Token::new(TokenKind::Str(s), line, col, offset));
                 }
                 Some(c) if is_ident_start(c) => {
                     let ident = self.read_ident();
-                    tokens.push(Token::new(TokenKind::Ident(ident), line, col));
+                    tokens.push(Token::new(TokenKind::Ident(ident), line, col, offset));
                 }
                 Some(c) => {
                     return Err(LexError {
                         message: format!("unexpected character '{c}'"),
                         line,
                         col,
+                        offset,
                     });
                 }
             }
@@ -177,12 +193,14 @@ impl<'a> Lexer<'a> {
             TokenKind::Eof,
             self.cursor.line,
             self.cursor.col,
+            self.cursor.offset,
         ));
         Ok(tokens)
     }
 
     fn read_string(&mut self, quote: char) -> Result<String, LexError> {
-        let (start_line, start_col) = (self.cursor.line, self.cursor.col);
+        let (start_line, start_col, start_offset) =
+            (self.cursor.line, self.cursor.col, self.cursor.offset);
         self.cursor.bump();
 
         let mut out = String::new();
@@ -195,6 +213,7 @@ impl<'a> Lexer<'a> {
                         ),
                         line: start_line,
                         col: start_col,
+                        offset: start_offset,
                     });
                 }
                 Some(c) if c == quote => {
