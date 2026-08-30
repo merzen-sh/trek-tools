@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NuiSchema",
+  "type": "object",
+  "properties": {
+    "endpoints": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/EndpointDefinition"
+      }
+    },
+    "events": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/EventDefinition"
+      }
+    },
+    "resource": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "resource"
+  ],
+  "$defs": {
+    "EndpointDefinition": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "request": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TypeDefinition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "response": {
+          "$ref": "#/$defs/TypeDefinition"
+        },
+        "type": {
+          "$ref": "#/$defs/EndpointType"
+        }
+      },
+      "required": [
+        "name",
+        "type",
+        "response"
+      ]
+    },
+    "EndpointType": {
+      "type": "string",
+      "enum": [
+        "query",
+        "mutation"
+      ]
+    },
+    "EventDefinition": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/TypeDefinition"
+        }
+      },
+      "required": [
+        "name",
+        "payload"
+      ]
+    },
+    "TypeDefinition": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TypeDefinition"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/TypeDefinition"
+          }
+        }
+      ]
+    }
+  }
+}
