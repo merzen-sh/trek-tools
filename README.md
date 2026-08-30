@@ -222,7 +222,24 @@ trek validate -m ./my-resource/fxmanifest.lua
 
 ---
 
-### 5. `release`
+### 5. `codegen`
+
+Generates typed React NUI hooks and Lua NUI helpers from a YAML contract. It can also create a starter contract and its JSON Schema for editor completion.
+
+```bash
+# Create nui-schema.yaml and trek-nui.schema.json
+trek codegen --init-schema
+
+# Generate the default React and Lua bindings
+trek codegen
+
+# Use custom paths
+trek codegen -s ./nui-schema.yaml -t ./react/src/generated/nui.ts -l ./src/shared/nui_events.lua
+```
+
+---
+
+### 6. `release`
 
 Composite command that runs the full release pipeline: **validate → bump → pack**.
 

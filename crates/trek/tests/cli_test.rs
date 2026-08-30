@@ -28,6 +28,21 @@ fn test_cli_version() {
 }
 
 #[test]
+fn test_cli_codegen_init_schema() {
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+    let schema = temp_dir.path().join("nui-schema.yaml");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_trek"))
+        .args(["codegen", "--init-schema", "-s", schema.to_str().unwrap()])
+        .output()
+        .expect("Failed to run trek codegen --init-schema");
+
+    assert!(output.status.success());
+    assert!(schema.exists());
+    assert!(temp_dir.path().join("trek-nui.schema.json").exists());
+}
+
+#[test]
 fn test_cli_generate_and_pack_workflow() {
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let temp_path = temp_dir.path();

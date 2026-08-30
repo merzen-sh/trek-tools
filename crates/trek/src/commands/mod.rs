@@ -1,3 +1,4 @@
+pub mod codegen;
 #[cfg(feature = "generate")]
 pub mod generate;
 pub mod pack;

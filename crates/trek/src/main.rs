@@ -17,6 +17,24 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Generate TypeScript and Lua NUI bindings from a YAML contract
+    Codegen {
+        /// Path to the input YAML schema
+        #[arg(short, long, default_value = "nui-schema.yaml")]
+        schema: PathBuf,
+
+        /// Path for the generated TypeScript file
+        #[arg(short = 't', long, default_value = "./react/src/generated/nui.ts")]
+        ts_out: PathBuf,
+
+        /// Path for the generated Lua file
+        #[arg(short = 'l', long, default_value = "./src/shared/nui_events.lua")]
+        lua_out: PathBuf,
+
+        /// Generate a starter YAML schema and its JSON Schema companion
+        #[arg(long)]
+        init_schema: bool,
+    },
     #[cfg(feature = "generate")]
     /// Generate a new FiveM resource scaffold
     Generate {
@@ -110,6 +128,12 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match &cli.command {
+        Commands::Codegen {
+            schema,
+            ts_out,
+            lua_out,
+            init_schema,
+        } => commands::codegen::run(schema, ts_out, lua_out, *init_schema)?,
         #[cfg(feature = "generate")]
         Commands::Generate {
             name,
