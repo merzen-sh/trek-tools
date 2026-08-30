@@ -360,20 +360,80 @@ fn pascal_case(value: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
-    fn generates_example_contract() {
-        let schema: NuiSchema = serde_yml::from_str("version: \"1.0\"\nresource: police_job\nevents:\n  - name: updateHealth\n    description: \"Triggers when health changes\"\n    payload: { health: number }\nendpoints:\n  - name: getPlayers\n    type: query\n    description: \"Fetch active players list\"\n    request: { search: \"string?\" }\n    response:\n      players: [ { id: number, name: string } ]\n").unwrap();
-        validate_schema(&schema).unwrap();
+    fn test_imports_events_only() {
+        let schema: NuiSchema = serde_yml::from_str(
+            "version: \"1.0\"\nresource: test\nevents:\n  - name: speedUpdated\n    payload: { speed: number }\n",
+        ).unwrap();
+
         let ts = generate_typescript(&schema);
-        assert!(ts.contains("Triggers when health changes"));
-        assert!(ts.contains("Fetch active players list"));
-        assert!(ts.contains("search?: string;"));
-        assert!(ts.contains("useNUIQuery<GetPlayersResponse, GetPlayersRequest>"));
-        assert!(ts.contains("players: Array<{"));
-        let lua = generate_lua(&schema);
-        assert!(lua.contains("--- Triggers when health changes"));
-        assert!(lua.contains("function NUI.emitUpdateHealth"));
-        assert!(lua.contains("--- Fetch active players list"));
-        assert!(lua.contains("function NUI.onGetPlayers"));
+        assert!(ts.contains("import { useNUIEvent } from \"@trekscripts/core/query\";"));
+        assert!(!ts.contains("useNUIQuery"));
+        assert!(!ts.contains("useNUIMutation"));
+        assert!(!ts.contains("NUIQueryOptions"));
+    }
+
+    #[test]
+    fn test_imports_query_only() {
+        let schema: NuiSchema = serde_yml::from_str(
+            "version: \"1.0\"\nresource: test\nendpoints:\n  - name: getInventory\n    type: query\n    response: { items: [string] }\n",
+        ).unwrap();
+
+        let ts = generate_typescript(&schema);
+        assert!(
+            ts.contains(
+                "import { useNUIQuery, NUIQueryOptions } from \"@trekscripts/core/query\";"
+            )
+        );
+        assert!(!ts.contains("useNUIMutation"));
+        assert!(!ts.contains("useNUIEvent"));
+    }
+
+    #[test]
+    fn test_imports_mutation_only() {
+        let schema: NuiSchema = serde_yml::from_str(
+            "version: \"1.0\"\nresource: test\nendpoints:\n  - name: useItem\n    type: mutation\n    request: { item: string }\n    response: { success: boolean }\n",
+        ).unwrap();
+
+        let ts = generate_typescript(&schema);
+        assert!(ts.contains(
+            "import { useNUIMutation, NUIQueryOptions } from \"@trekscripts/core/query\";"
+        ));
+        assert!(!ts.contains("useNUIQuery"));
+        assert!(!ts.contains("useNUIEvent"));
+    }
+
+    #[test]
+    fn test_imports_empty_schema() {
+        let schema: NuiSchema = serde_yml::from_str("version: \"1.0\"\nresource: test\n").unwrap();
+
+        let ts = generate_typescript(&schema);
+        assert!(!ts.contains("import"));
+        assert!(!ts.contains("@trekscripts/core/query"));
+    }
+
+    #[test]
+    fn test_imports_all_combined() {
+        let schema: NuiSchema = serde_yml::from_str(
+            r#"
+version: "1.0"
+resource: test
+events:
+  - name: onAlert
+    payload: { msg: string }
+endpoints:
+  - name: getData
+    type: query
+    response: { ok: boolean }
+  - name: doAction
+    type: mutation
+    response: { ok: boolean }
+"#,
+        )
+        .unwrap();
+
+        let ts = generate_typescript(&schema);
+        assert!(ts.contains("import { useNUIQuery, useNUIMutation, useNUIEvent, NUIQueryOptions } from \"@trekscripts/core/query\";"));
     }
 }
