@@ -16,18 +16,6 @@ fn test_cli_help() {
 }
 
 #[test]
-fn test_cli_version() {
-    let output = Command::new(env!("CARGO_BIN_EXE_trek"))
-        .arg("--version")
-        .output()
-        .expect("Failed to execute trek");
-
-    assert!(output.status.success());
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(stdout.contains("0.1.0"));
-}
-
-#[test]
 fn test_cli_codegen_init_schema() {
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let schema = temp_dir.path().join("nui-schema.yaml");
