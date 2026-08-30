@@ -246,10 +246,10 @@ fn ts_type(ty: &TypeDefinition, indent: usize) -> String {
 }
 
 pub fn generate_lua(schema: &NuiSchema) -> String {
-    let mut out = format!("-- {HEADER}\nlocal Nui = {{}}\n");
+    let mut out = format!("-- {HEADER}\nNUI = {{}}\n");
     for event in &schema.events {
         let fn_name = pascal_case(&event.name);
-        out.push_str(&format!("\n--- Emit '{}' event to UI\n---@param payload {}\nfunction Nui.emit{fn_name}(payload)\n    SendNUIMessage({{\n        action = \"{}\",\n        data = payload\n    }})\nend\n", event.name, lua_annotation(&event.payload), event.name));
+        out.push_str(&format!("\n--- Emit '{}' event to UI\n---@param payload {}\nfunction NUI.emit{fn_name}(payload)\n    SendNUIMessage({{\n        action = \"{}\",\n        data = payload\n    }})\nend\n", event.name, lua_annotation(&event.payload), event.name));
     }
     for endpoint in &schema.endpoints {
         let fn_name = pascal_case(&endpoint.name);
@@ -258,9 +258,8 @@ pub fn generate_lua(schema: &NuiSchema) -> String {
             .as_ref()
             .map(lua_annotation)
             .unwrap_or_else(|| "nil".to_string());
-        out.push_str(&format!("\n--- Register callback handler for '{}'\n---@param handler fun(data: {}): {}\nfunction Nui.on{fn_name}(handler)\n    RegisterNuiCallback(\"{}\", function(data, cb)\n        local response = handler(data)\n        cb(response or {{}})\n    end)\nend\n", endpoint.name, request, lua_annotation(&endpoint.response), endpoint.name));
+        out.push_str(&format!("\n--- Register callback handler for '{}'\n---@param handler fun(data: {}): {}\nfunction NUI.on{fn_name}(handler)\n    RegisterNuiCallback(\"{}\", function(data, cb)\n        local response = handler(data)\n        cb(response or {{}})\n    end)\nend\n", endpoint.name, request, lua_annotation(&endpoint.response), endpoint.name));
     }
-    out.push_str("\nreturn Nui\n");
     out
 }
 
@@ -313,7 +312,7 @@ mod tests {
         assert!(ts.contains("useNUIQuery<GetPlayersResponse, GetPlayersRequest>"));
         assert!(ts.contains("players: Array<{"));
         let lua = generate_lua(&schema);
-        assert!(lua.contains("function Nui.emitUpdateHealth"));
-        assert!(lua.contains("function Nui.onGetPlayers"));
+        assert!(lua.contains("function NUI.emitUpdateHealth"));
+        assert!(lua.contains("function NUI.onGetPlayers"));
     }
 }
