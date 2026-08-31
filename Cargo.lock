@@ -639,14 +639,23 @@ dependencies = [
  "askama",
  "clap",
  "console",
+ "serde_yml",
+ "sha2",
+ "tempfile",
+ "trek-codegen",
+ "trek-fxmanifest",
+ "zip",
+]
+
+[[package]]
+name = "trek-codegen"
+version = "0.2.0"
+dependencies = [
+ "anyhow",
  "schemars",
  "serde",
  "serde_json",
  "serde_yml",
- "sha2",
- "tempfile",
- "trek-fxmanifest",
- "zip",
 ]
 
 [[package]]

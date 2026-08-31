@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "NuiSchema",
+  "description": "Root configuration schema for NUI (Network User Interface) contracts.",
   "type": "object",
   "properties": {
     "endpoints": {
@@ -31,6 +32,7 @@
   ],
   "$defs": {
     "EndpointDefinition": {
+      "description": "Definition structure for two-way NUI callback endpoints.",
       "type": "object",
       "properties": {
         "description": {
@@ -67,6 +69,7 @@
       ]
     },
     "EndpointType": {
+      "description": "Classification of RPC endpoints used to drive code generation.",
       "type": "string",
       "enum": [
         "query",
@@ -74,6 +77,7 @@
       ]
     },
     "EventDefinition": {
+      "description": "Definition structure for one-way UI events.",
       "type": "object",
       "properties": {
         "description": {
@@ -95,6 +99,7 @@
       ]
     },
     "TypeDefinition": {
+      "description": "Polymorphic representation of payload field types.",
       "anyOf": [
         {
           "type": "string"

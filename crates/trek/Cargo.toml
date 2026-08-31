@@ -12,17 +12,16 @@ default = ["generate"]
 generate = ["dep:askama"]
 
 [dependencies]
-anyhow = { version = "1.0.104", default-features = false, features = ["std"] }
-askama = { version = "0.16.0", default-features = false, features = ["derive", "alloc", "config"], optional = true }
-clap = { version = "4.6.6", default-features = false, features = ["std", "derive", "help", "usage", "error-context","string","color"] }
-console = "0.15"
-sha2 = "0.10"
-schemars = "1"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-serde_yml = "0.0.12"
-zip = { version = "0.6", default-features = false, features = ["deflate"] }
-trek-fxmanifest = { path = "../trek-fxmanifest" }
+trek-fxmanifest.workspace = true
+trek-codegen.workspace = true
+
+anyhow.workspace = true
+askama = { workspace = true,optional = true }
+clap.workspace = true
+console.workspace = true
+sha2.workspace = true
+serde_yml.workspace = true
+zip.workspace = true
 
 [dev-dependencies]
 tempfile = "3"
