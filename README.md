@@ -1,5 +1,7 @@
 # trek
 
+[English](README.md) | [ไทย](README.th.md)
+
 A lightweight, high-performance CLI utility for scaffolding and packaging FiveM resources.
 
 ---
