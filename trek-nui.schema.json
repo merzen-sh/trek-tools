@@ -11,6 +11,13 @@
         "$ref": "#/$defs/EndpointDefinition"
       }
     },
+    "enums": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/EnumDefinition"
+      }
+    },
     "events": {
       "type": "array",
       "default": [],
@@ -74,6 +81,31 @@
       "enum": [
         "query",
         "mutation"
+      ]
+    },
+    "EnumDefinition": {
+      "description": "Definition structure for enum types.",
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "values"
       ]
     },
     "EventDefinition": {

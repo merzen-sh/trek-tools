@@ -1,8 +1,8 @@
-# trek
-
-[English](README.md) | [ไทย](README.th.md)
-
-A lightweight, high-performance CLI utility for scaffolding and packaging FiveM resources.
+<div align="center">
+  <br />
+  <h1>trek</h1>
+  <p><strong>Opinionated scaffolding, validation, and packaging CLI for FiveM resource development.</strong></p>
+</div>
 
 ---
 
@@ -10,6 +10,7 @@ A lightweight, high-performance CLI utility for scaffolding and packaging FiveM 
 
 - **Interactive & Non-interactive Scaffolding**: Generate standard FiveM resource structures with multi-framework boilerplate (ESX, QBCore, Qbox) in seconds.
 - **Pattern-based Resource Packaging**: Package resources into production-ready `.zip` release archives using `.pack` allowlist patterns.
+- **Contract-Driven NUI Codegen**: Generate typed React NUI hooks and Lua helpers from `nui-schema.yaml` with enum and RPC support.
 - **Ultra-lean Binary**: Optimized Rust build compiled for minimal binary footprint.
 
 ---
@@ -81,16 +82,16 @@ my-resource/
 ├── .pack           # Allowlist patterns for release packaging
 ├── fxmanifest.lua       # FiveM resource manifest
 ├── config/
-│   ├── client.lua       # Client-side configuration
-│   ├── server.lua       # Server-side configuration
-│   └── share.lua        # Shared configuration
-├── src/
-│   ├── client/
-│   │   └── client.lua   # Client-side logic
-│   ├── server/
-│   │   └── server.lua   # Server-side logic
-│   └── shared/
-│       └── utils.lua    # Shared utility functions
+�│   ├── client.lua       # Client-side configuration
+�│   ├── server.lua       # Server-side configuration
+�│   └── share.lua        # Shared configuration
+└── src/
+�    ├── client/
+�   �│   ├── client.lua   # Client-side logic
+�    ├── server/
+�   �│   ├── server.lua   # Server-side logic
+�    └── shared/
+�        └── utils.lua    # Shared utility functions
 ```
 
 ---
@@ -226,10 +227,10 @@ trek validate -m ./my-resource/fxmanifest.lua
 
 ### 5. `codegen`
 
-Generates typed React NUI hooks and Lua NUI helpers from a YAML contract. It can also create a starter contract and its JSON Schema for editor completion.
+Generates typed React NUI hooks and Lua NUI helpers from a YAML contract (`nui-schema.yaml`). Supports enums, one-way events, and two-way RPC endpoints (`query` / `mutation`).
 
 ```bash
-# Create nui-schema.yaml and trek-nui.schema.json
+# Create starter nui-schema.yaml and trek-nui.schema.json
 trek codegen --init-schema
 
 # Generate the default React and Lua bindings
@@ -239,13 +240,43 @@ trek codegen
 trek codegen -s ./nui-schema.yaml -t ./react/src/generated/nui.ts -l ./src/shared/nui_events.lua
 ```
 
+#### Example `nui-schema.yaml`
+
+```yaml
+version: "1.0"
+resource: "my_resource"
+
+enums:
+  - name: PlayerStatus
+    description: "Current player status"
+    values:
+      - idle
+      - in_combat
+      - dead
+
+events:
+  - name: statusUpdated
+    description: "Emitted when player status changes"
+    payload:
+      status: PlayerStatus
+      health: number
+
+endpoints:
+  - name: getPlayerStatus
+    type: query
+    response:
+      status: PlayerStatus
+```
+
+> For the full schema specification, type system details, and end-to-end examples, see the [nui-schema.yaml Guide](docs/nui-schema.md).
+
 ---
 
 ### 6. `release`
 
 Composite command that runs the full release pipeline: **validate → bump → pack**.
 
-Aborts before packing if validation reports any error. Version bumping is optional — without a bump flag the current version is kept. The Markdown report is always included, optionally with the archive's SHA-256 checksum.
+Aborts before packing if validation reports any error. Version bumping is optional � without a bump flag the current version is kept. The Markdown report is always included, optionally with the archive's SHA-256 checksum.
 
 ```bash
 trek release [OPTIONS]

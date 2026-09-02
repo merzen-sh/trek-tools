@@ -7,7 +7,7 @@ pub mod generators;
 pub mod schema;
 pub mod validation;
 
-const STARTER_SCHEMA: &str = "# yaml-language-server: $schema=https://raw.githubusercontent.com/merzen-sh/trek-tools/refs/heads/main/trek-nui.schema.json\n\nversion: \"1.0\"\nresource: \"my_resource\"\nevents: []\nendpoints: []\n";
+const STARTER_SCHEMA: &str = "# yaml-language-server: $schema=https://raw.githubusercontent.com/merzen-sh/trek-tools/refs/heads/main/trek-nui.schema.json\n\nversion: \"1.0\"\nresource: \"my_resource\"\nenums: []\nevents: []\nendpoints: []\n";
 
 pub fn initialize_schema(schema_path: &Path) -> Result<()> {
     if schema_path.exists() {

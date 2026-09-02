@@ -9,9 +9,19 @@ pub struct NuiSchema {
     pub version: String,
     pub resource: String,
     #[serde(default)]
+    pub enums: Vec<EnumDefinition>,
+    #[serde(default)]
     pub events: Vec<EventDefinition>,
     #[serde(default)]
     pub endpoints: Vec<EndpointDefinition>,
+}
+
+/// Definition structure for enum types.
+#[derive(Debug, Serialize, Deserialize, JsonSchema, Clone, PartialEq, Eq)]
+pub struct EnumDefinition {
+    pub name: String,
+    pub description: Option<String>,
+    pub values: Vec<String>,
 }
 
 /// Definition structure for one-way UI events.
